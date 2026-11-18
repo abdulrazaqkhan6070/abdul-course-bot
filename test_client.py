@@ -4,9 +4,9 @@ import json
 from websockets.asyncio.client import connect
 
 QUESTIONS = [
-    "Hi, my name is Abdul and I study Computer Science.",
-    "How many credit hours do I usually need per semester?",
-    "What is my name and what do I study?",
+    "What are the prerequisites for CS301?",
+    "And what about CS401?",
+    "Is there a course called CS999?",
 ]
 
 
@@ -15,12 +15,20 @@ async def main():
         for turn, question in enumerate(QUESTIONS, 1):
             print(f"\n--- Turn {turn} ---")
             print(f"Student: {question}")
-            print("Advisor: ", end="", flush=True)
             await ws.send(question)
 
+            advisor_started = False
             while True:
                 msg = json.loads(await ws.recv())
-                if msg["type"] == "chunk":
+
+                if msg["type"] == "tool_call":
+                    print(f"[Tool call]   {msg['name']}({msg['args']})")
+                elif msg["type"] == "tool_result":
+                    print(f"[Tool result] {msg['result']}")
+                elif msg["type"] == "chunk":
+                    if not advisor_started:
+                        print("Advisor: ", end="", flush=True)
+                        advisor_started = True
                     print(msg["text"], end="", flush=True)
                 elif msg["type"] == "done":
                     print()
