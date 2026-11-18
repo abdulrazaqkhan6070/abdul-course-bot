@@ -7,6 +7,7 @@ An AI chatbot that helps university students with course prerequisites, credit h
 - **Day 1:** repo setup and a basic script (`bot.py`) that sends one question to the LLM and prints the reply.
 - **Day 2:** FastAPI WebSocket endpoint `/ws/chat` with in-memory conversation history and chunk-by-chunk streaming.
 - **Day 3:** function calling with one custom tool, `check_prerequisites(code)`, backed by a mock course catalog.
+- **Day 3 follow-up:** input validation for the tool and its arguments, plus unit tests for `check_prerequisites`.
 
 Planned next: 15 FAQs on admissions, credits and deadlines.
 
@@ -17,6 +18,7 @@ Planned next: 15 FAQs on admissions, credits and deadlines.
 - WebSockets
 - Google Gemini via the `google-genai` SDK
 - python-dotenv for loading the API key
+- pytest for unit tests
 
 ## Setup
 
@@ -76,7 +78,7 @@ The test client opens one WebSocket connection and sends 3 questions about cours
 
 ## Function Calling (Day 3)
 
-The bot has one tool, `check_prerequisites(code)`, defined in `tools.py`. It looks a course code up in a mock catalog (a Python dictionary of made-up courses) and returns the title, credit hours, and prerequisite codes. If the code does not exist, it returns a "not found" result so the bot can say so instead of inventing details.
+The bot has one tool, `check_prerequisites(code)`, defined in `tools.py`. It looks a course code up in a mock catalog (a Python dictionary of made-up courses) and returns the title, credit hours, and prerequisite codes. If the code does not exist, or the input is invalid (empty, not text, and so on), it returns a "not found" result so the bot can say so instead of inventing details.
 
 How the tool call loop works in `main.py`:
 
@@ -86,6 +88,18 @@ How the tool call loop works in `main.py`:
 4. If the model needs more lookups, the loop repeats, up to a safety limit of 5 rounds.
 
 Mock catalog (for testing): CS101, CS102, CS201, CS202, CS301, CS401, MATH101, MATH201, MATH202.
+
+## Testing
+
+Unit tests for the tool function live in `test_tools.py` (15 tests covering known courses, case and spacing, unknown courses, bad input, and catalog consistency). They do not need an API key or the server:
+
+```bash
+python -m pytest -v
+```
+
+`pytest.ini` limits pytest to `test_tools.py`. The file `test_client.py` is a live demo client, not a unit test.
+
+Tool calls in `main.py` run through a safe helper (`run_tool`), so malformed or unexpected arguments from the model return an error result instead of crashing the chat.
 
 ## WebSocket API
 
@@ -110,6 +124,8 @@ abdul-course-bot/
 ├── bot.py             # Gemini client and advisor system persona (Day 1 script)
 ├── main.py            # FastAPI app: /ws/chat streaming endpoint and tool call loop
 ├── tools.py           # Mock course catalog, check_prerequisites, and the tool schema
+├── test_tools.py      # Unit tests for check_prerequisites and the tool schema
+├── pytest.ini         # Limits pytest to test_tools.py
 ├── test_client.py     # 3-turn streaming test client that shows tool calls
 ├── requirements.txt   # Python dependencies
 ├── .env.example       # Template for environment variables

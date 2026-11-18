@@ -12,8 +12,16 @@ COURSES = {
 }
 
 
-def check_prerequisites(code: str) -> dict:
-    """Return the title, credits and prerequisites for a course code."""
+def check_prerequisites(code) -> dict:
+    """Return the title, credits and prerequisites for a course code.
+    Never raises: bad input returns a clear 'found: False' result."""
+    if not isinstance(code, str) or not code.strip():
+        return {
+            "found": False,
+            "code": str(code),
+            "message": "A course code is required, for example CS301.",
+        }
+
     code = code.strip().upper().replace(" ", "")
     course = COURSES.get(code)
 
@@ -31,6 +39,8 @@ def check_prerequisites(code: str) -> dict:
         "credits": course["credits"],
         "prerequisites": course["prerequisites"],
     }
+
+
 # JSON schema that tells Gemini this tool exists and how to call it
 TOOLS = [
     {
@@ -57,6 +67,7 @@ TOOLS = [
         ]
     }
 ]
+
 
 if __name__ == "__main__":
     print(check_prerequisites("CS301"))

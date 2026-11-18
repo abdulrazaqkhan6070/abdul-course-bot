@@ -12,6 +12,19 @@ MAX_TOOL_ROUNDS = 5  # safety limit so the loop can never run forever
 # Maps the tool name Gemini uses to the real Python function
 TOOL_FUNCTIONS = {"check_prerequisites": check_prerequisites}
 
+
+def run_tool(name: str, args: dict) -> dict:
+    """Run a tool safely. Any problem becomes an error result the model can read."""
+    func = TOOL_FUNCTIONS.get(name)
+    if func is None:
+        return {"error": f"Unknown tool: {name}"}
+    try:
+        return func(**args)
+    except TypeError:
+        return {"error": f"Invalid arguments for {name}: {args}"}
+    except Exception as e:
+        return {"error": f"Tool {name} failed: {e}"}
+
 app = FastAPI(title="University Course Advisor")
 
 
@@ -68,9 +81,7 @@ async def stream_reply(websocket: WebSocket, messages):
                 {"type": "tool_call", "name": call.name, "args": args}
             )
 
-            func = TOOL_FUNCTIONS.get(call.name)
-            result = func(**args) if func else {"error": f"Unknown tool {call.name}"}
-
+            result = run_tool(call.name, args)
             await websocket.send_json(
                 {"type": "tool_result", "name": call.name, "result": result}
             )
