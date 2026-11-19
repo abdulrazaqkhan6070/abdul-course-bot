@@ -1,0 +1,92 @@
+[
+  {
+    "id": "faq-01",
+    "category": "admissions",
+    "question": "What are the admission requirements for undergraduate programs?",
+    "answer": "Applicants need a completed secondary school certificate (intermediate or equivalent) with at least 60% marks, a completed application form, copies of academic transcripts and national ID or B-form, and two passport-size photos."
+  },
+  {
+    "id": "faq-02",
+    "category": "admissions",
+    "question": "Is an entrance test required for admission?",
+    "answer": "Yes. All undergraduate applicants must take the university entrance test. The test score counts for 50% of the merit score and secondary school marks count for the other 50%."
+  },
+  {
+    "id": "faq-03",
+    "category": "admissions",
+    "question": "How do I apply for admission?",
+    "answer": "Apply online through the admissions portal: create an account, fill in the application form, upload your documents, and pay the application fee. You will receive a confirmation email once your application is submitted."
+  },
+  {
+    "id": "faq-04",
+    "category": "admissions",
+    "question": "How much is the application fee?",
+    "answer": "The application fee is PKR 2,500. It is non-refundable and must be paid before the application deadline."
+  },
+  {
+    "id": "faq-05",
+    "category": "admissions",
+    "question": "Can I transfer credits from another university?",
+    "answer": "Yes. Up to 30 credit hours can be transferred from a recognized university if you earned a grade of B or higher in those courses and the department approves the equivalence."
+  },
+  {
+    "id": "faq-06",
+    "category": "credits",
+    "question": "How many credit hours can I take in one semester?",
+    "answer": "Full-time students must take at least 12 credit hours and may take up to 18. Taking more than 18 credit hours requires a CGPA of 3.0 or higher and written approval from the department head."
+  },
+  {
+    "id": "faq-07",
+    "category": "credits",
+    "question": "How many total credit hours are needed to graduate with a BS in Computer Science?",
+    "answer": "A BS in Computer Science requires 130 credit hours in total, including core courses, electives, mathematics, and the final year project."
+  },
+  {
+    "id": "faq-08",
+    "category": "credits",
+    "question": "What happens if I take fewer than 12 credit hours?",
+    "answer": "Students registered for fewer than 12 credit hours are classified as part-time. Part-time status can affect scholarships, financial aid, and hostel eligibility, so check with the registrar before dropping below 12."
+  },
+  {
+    "id": "faq-09",
+    "category": "credits",
+    "question": "How are credit hours counted for lab courses?",
+    "answer": "One credit hour of theory equals one hour of lecture per week. Lab courses earn one credit hour for every three hours of lab work per week."
+  },
+  {
+    "id": "faq-10",
+    "category": "credits",
+    "question": "Can I repeat a course to improve my grade?",
+    "answer": "Yes. You may repeat any course in which you earned a grade below C, up to two attempts. The most recent grade replaces the earlier one in your CGPA, but both attempts remain on your transcript."
+  },
+  {
+    "id": "faq-11",
+    "category": "deadlines",
+    "question": "What is the last date to register for Spring 2027 courses?",
+    "answer": "Course registration for Spring 2027 closes on January 15, 2027. Late registration is allowed until January 22, 2027 with a late fee of PKR 1,000."
+  },
+  {
+    "id": "faq-12",
+    "category": "deadlines",
+    "question": "What is the last date to add or drop a course without penalty?",
+    "answer": "You can add or drop courses without penalty until the end of the second week of the semester, which is January 30, 2027 for Spring 2027."
+  },
+  {
+    "id": "faq-13",
+    "category": "deadlines",
+    "question": "What is the last date to withdraw from a course?",
+    "answer": "You can withdraw from a course until the end of week 10, which is April 2, 2027 for Spring 2027. A withdrawal appears as a W on your transcript and does not affect your CGPA."
+  },
+  {
+    "id": "faq-14",
+    "category": "deadlines",
+    "question": "When is the semester fee payment deadline?",
+    "answer": "Spring 2027 fees must be paid by January 10, 2027. Payments after that date incur a late fee of PKR 500 per week, and unpaid fees can block course registration."
+  },
+  {
+    "id": "faq-15",
+    "category": "deadlines",
+    "question": "What is the deadline to apply for scholarships?",
+    "answer": "Scholarship applications for Spring 2027 must be submitted to the financial aid office by December 15, 2026. Applications received after that date are not considered for this semester."
+  }
+]

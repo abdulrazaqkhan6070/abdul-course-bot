@@ -1,3 +1,6 @@
+import chromadb
+
+from ingest import COLLECTION_NAME, DB_PATH, embed_texts
 # Mock course catalog. These are made-up courses used for the demo.
 COURSES = {
     "CS101": {"title": "Introduction to Programming", "credits": 3, "prerequisites": []},
@@ -40,6 +43,37 @@ def check_prerequisites(code) -> dict:
         "prerequisites": course["prerequisites"],
     }
 
+def search_faq(query, n_results: int = 3) -> dict:
+    """Search the FAQ knowledge base and return the closest matching entries."""
+    if not isinstance(query, str) or not query.strip():
+        return {"found": False, "message": "A search query is required."}
+
+    n_results = n_results if isinstance(n_results, int) and 1 <= n_results <= 5 else 3
+
+    try:
+        db = chromadb.PersistentClient(path=DB_PATH)
+        collection = db.get_collection(COLLECTION_NAME)
+    except Exception:
+        return {"found": False, "message": "The FAQ database is not ready. Run ingest.py first."}
+
+    # Questions use a different embedding setting than the stored documents
+    vector = embed_texts([query.strip()], task_type="RETRIEVAL_QUERY")[0]
+    hits = collection.query(query_embeddings=[vector], n_results=n_results)
+
+    results = []
+    for meta, distance in zip(hits["metadatas"][0], hits["distances"][0]):
+        results.append(
+            {
+                "category": meta["category"],
+                "question": meta["question"],
+                "answer": meta["answer"],
+                "distance": round(distance, 3),  # lower means a closer match
+            }
+        )
+
+    if not results:
+        return {"found": False, "message": "No FAQ entries matched."}
+    return {"found": True, "results": results}
 
 # JSON schema that tells Gemini this tool exists and how to call it
 TOOLS = [
@@ -63,11 +97,30 @@ TOOLS = [
                     },
                     "required": ["code"],
                 },
-            }
+            },
+            {
+                "name": "search_faq",
+                "description": (
+                    "Search the university FAQ knowledge base about admissions, "
+                    "credit hours, fees, and deadlines. Use this for any policy, "
+                    "requirement, date, or fee question. Answer only from the "
+                    "returned entries; if none of them answers the question, say "
+                    "you do not have that information."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "The student's question, in plain words.",
+                        }
+                    },
+                    "required": ["query"],
+                },
+            },
         ]
     }
 ]
-
 
 if __name__ == "__main__":
     print(check_prerequisites("CS301"))

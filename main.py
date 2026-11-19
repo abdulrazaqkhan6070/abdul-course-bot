@@ -4,14 +4,16 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from google.genai import errors, types
 
 from bot import client, SYSTEM_PROMPT
-from tools import TOOLS, check_prerequisites
+from tools import TOOLS, check_prerequisites, search_faq
 
-MODEL = "gemini-3.8-flash"
+MODEL = "gemini-3.5-flash-lite"
 MAX_TOOL_ROUNDS = 5  # safety limit so the loop can never run forever
 
 # Maps the tool name Gemini uses to the real Python function
-TOOL_FUNCTIONS = {"check_prerequisites": check_prerequisites}
-
+TOOL_FUNCTIONS = {
+    "check_prerequisites": check_prerequisites,
+    "search_faq": search_faq,
+}
 
 def run_tool(name: str, args: dict) -> dict:
     """Run a tool safely. Any problem becomes an error result the model can read."""
@@ -81,7 +83,7 @@ async def stream_reply(websocket: WebSocket, messages):
                 {"type": "tool_call", "name": call.name, "args": args}
             )
 
-            result = run_tool(call.name, args)
+            result = await asyncio.to_thread(run_tool, call.name, args)
             await websocket.send_json(
                 {"type": "tool_result", "name": call.name, "result": result}
             )

@@ -6,20 +6,30 @@ from google.genai import types
 # Load GEMINI_API_KEY from the .env file
 load_dotenv()
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY"),
+    http_options=types.HttpOptions(
+        timeout=30_000,  # milliseconds
+        retry_options=types.HttpRetryOptions(attempts=1),
+    ),
+)
 
 # The system persona: tells the model who it is and how to behave
 SYSTEM_PROMPT = """You are Abdul's University Course Advisor, a friendly and accurate
 assistant for university students. You help with course prerequisites, credit hours,
-admissions questions, and deadlines. Keep answers short and clear. If you are not sure
-about a university-specific rule, say so and suggest the student check with the
-registrar or department office. Never invent course codes or dates."""
+admissions questions, and deadlines. Keep answers short and clear.
 
+Tools:
+- For questions about what to take before a course, use check_prerequisites.
+- For any policy, requirement, fee, date or deadline question, use search_faq and
+  answer only from the entries it returns. If none of them answers the question, say
+  you do not have that information and suggest the registrar or department office.
+- Never invent course codes, policies, fees or dates."""
 
 def ask_advisor(question: str) -> str:
     """Send one question to Gemini with the advisor persona and return the reply."""
     response = client.models.generate_content(
-            model="gemini-3.8-flash",
+            model="gemini-3.5-flash",
         contents=question,
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,
