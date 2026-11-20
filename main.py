@@ -1,4 +1,7 @@
 import asyncio
+from pathlib import Path
+
+from fastapi.responses import FileResponse
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from google.genai import errors, types
@@ -100,7 +103,12 @@ async def stream_reply(websocket: WebSocket, messages):
 
 
 @app.get("/")
-def root():
+def home():
+    return FileResponse(Path(__file__).with_name("index.html"))
+
+
+@app.get("/health")
+def health():
     return {"status": "ok", "service": "abdul-course-bot"}
 
 
