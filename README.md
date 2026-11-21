@@ -8,7 +8,7 @@ A chatbot for university students (prerequisites, credit hours, admissions, dead
 - **Memory:** each chat keeps its own history, so the bot remembers earlier turns.
 - **Tool calling:** `check_prerequisites(code)` looks up a course in a mock catalog.
 - **FAQ search (RAG):** `search_faq(query)` finds the closest of 15 FAQs in ChromaDB, and the bot answers only from them.
-
+- **Voice:** the 🎤 button turns your speech into a question, and the 🔊 button reads answers aloud (Edge or Chrome, using the browser's built-in speech tools).
 ## Setup
 
 Requires Python 3.10+ and a free Gemini API key from https://aistudio.google.com/apikey
