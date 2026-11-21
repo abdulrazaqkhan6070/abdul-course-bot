@@ -19,6 +19,9 @@
   input { flex: 1; padding: 10px 12px; border: 1px solid #cfd3d8; border-radius: 10px; font-size: 15px; }
   button { padding: 10px 18px; border: 0; border-radius: 10px; background: #2563eb; color: #fff; font-size: 15px; cursor: pointer; }
   button:disabled { background: #9db7ee; cursor: default; }
+    #mic { background: #6b7280; padding: 10px 14px; }
+  #mic.on { background: #dc2626; }
+  
 </style>
 </head>
 <body>
@@ -29,6 +32,8 @@
   </div>
   <form id="form">
     <input id="input" placeholder="Type your question..." autocomplete="off">
+        <button type="button" id="mic" title="Speak your question">🎤</button>
+          <button type="button" id="speak" title="Read answers aloud">🔇</button>  
     <button id="send">Send</button>
   </form>
 </div>
@@ -80,8 +85,9 @@ function connect() {
       botText += m.text;
       botBubble.innerHTML = esc(botText).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
       chat.scrollTop = chat.scrollHeight;
-    } else if (m.type === "done") {
-      botBubble = null; setBusy(false);
+        } else if (m.type === "done") {
+      if (speakOn && botText) speak(botText);
+      botBubble = null; setBusy(false); 
     } else if (m.type === "error") {
       botBubble = null; addMsg("bot", "Sorry, something went wrong: " + m.text); setBusy(false);
     }
@@ -97,7 +103,48 @@ form.addEventListener("submit", (e) => {
   input.value = "";
   setBusy(true);
 });
+const mic = document.getElementById("mic");
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (!SR) {
+  mic.style.display = "none"; // browser has no speech recognition
+} else {
+  const rec = new SR();
+  rec.lang = "en-US";
+  rec.interimResults = false;
+  rec.onstart = () => { mic.classList.add("on"); input.placeholder = "Listening..."; };
+  rec.onend = () => { mic.classList.remove("on"); input.placeholder = "Type your question..."; };
+  rec.onresult = (e) => {
+    input.value = e.results[0][0].transcript;
+    form.requestSubmit();
+  };
+  rec.onerror = (e) => { addMsg("tool", "Microphone problem: " + e.error); };
+  mic.addEventListener("click", () => {
+    if (input.disabled) return;
+    try { rec.start(); } catch (err) { /* already listening */ }
+  });
+}
+let speakOn = false;
+const speakBtn = document.getElementById("speak");
 
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+  const clean = text.replace(/\*\*/g, "").replace(/[*#_`]/g, "");
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(clean);
+  u.lang = "en-US";
+  window.speechSynthesis.speak(u);
+}
+
+if (!("speechSynthesis" in window)) {
+  speakBtn.style.display = "none"; // browser cannot talk
+} else {
+  speakBtn.addEventListener("click", () => {
+    speakOn = !speakOn;
+    speakBtn.classList.toggle("on", speakOn);
+    speakBtn.textContent = speakOn ? "🔊" : "🔇";
+    if (!speakOn) window.speechSynthesis.cancel();
+  });
+}
 connect();
 </script>
 </body>
