@@ -1,22 +1,27 @@
 import asyncio
+import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi.responses import FileResponse
-
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse
 from google.genai import errors, types
 
 from bot import client, SYSTEM_PROMPT
+from ingest import DB_PATH, build_index
 from tools import TOOLS, check_prerequisites, search_faq
 
 MODEL = "gemini-3.5-flash-lite"
 MAX_TOOL_ROUNDS = 5  # safety limit so the loop can never run forever
+MAX_MESSAGE_CHARS = 500     # longest question we accept
+MAX_MESSAGES_PER_CHAT = 20  # questions allowed per chat session
 
 # Maps the tool name Gemini uses to the real Python function
 TOOL_FUNCTIONS = {
     "check_prerequisites": check_prerequisites,
     "search_faq": search_faq,
 }
+
 
 def run_tool(name: str, args: dict) -> dict:
     """Run a tool safely. Any problem becomes an error result the model can read."""
@@ -30,7 +35,20 @@ def run_tool(name: str, args: dict) -> dict:
     except Exception as e:
         return {"error": f"Tool {name} failed: {e}"}
 
-app = FastAPI(title="University Course Advisor")
+
+@asynccontextmanager
+async def lifespan(app):
+    # Build the FAQ knowledge base on first start (e.g. on a fresh server)
+    if not os.path.isdir(DB_PATH):
+        try:
+            await asyncio.to_thread(build_index)
+            print("FAQ knowledge base built.")
+        except Exception as e:
+            print(f"Could not build the FAQ index: {e}")
+    yield
+
+
+app = FastAPI(title="University Course Advisor", lifespan=lifespan)
 
 
 async def stream_one_round(websocket: WebSocket, messages, attempts=6):
@@ -116,10 +134,24 @@ def health():
 async def chat(websocket: WebSocket):
     await websocket.accept()
     messages = []  # in-memory history for this chat only
+    turns = 0
 
     try:
         while True:
             user_text = await websocket.receive_text()
+
+            if len(user_text) > MAX_MESSAGE_CHARS:
+                await websocket.send_json(
+                    {"type": "error", "text": f"Please keep your question under {MAX_MESSAGE_CHARS} characters."}
+                )
+                continue
+            if turns >= MAX_MESSAGES_PER_CHAT:
+                await websocket.send_json(
+                    {"type": "error", "text": "Chat limit reached. Please refresh the page to start a new chat."}
+                )
+                continue
+            turns += 1
+
             start = len(messages)
             messages.append(
                 types.Content(role="user", parts=[types.Part(text=user_text)])
